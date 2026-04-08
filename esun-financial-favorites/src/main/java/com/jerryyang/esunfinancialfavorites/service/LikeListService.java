@@ -17,7 +17,8 @@ public interface LikeListService {
     // 查詢
     List<LikeListResponse> getLikeListByUserId(String userId);
 
-    //刪除
     // 刪除喜好金融商品
     void deleteLikeListBySn(Integer sn);
-}
+
+    // 更改喜好金融商品
+    void updateLikeList(Integer sn, LikeListRequest likeListRequest);}

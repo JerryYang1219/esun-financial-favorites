@@ -115,6 +115,7 @@ public class LikeListDaoImpl implements LikeListDao {
         return (List<LikeList>) result.get("likeList");
     }
 
+    //操作資料庫執行刪除
     @Override
     public void deleteLikeListBySn(Integer sn) {
         // 透過 SimpleJdbcCall 呼叫 Stored Procedure sp_delete_like_list
@@ -126,6 +127,27 @@ public class LikeListDaoImpl implements LikeListDao {
                 .addValue("p_sn", sn); // 傳入流水序號
 
         // 執行 Stored Procedure 刪除資料
+        jdbcCall.execute(params);
+    }
+
+    //操作資料庫執行修改
+    @Override
+    public void updateLikeList(Integer sn, LikeListRequest likeListRequest,
+                               BigDecimal totalFee, BigDecimal totalAmount) {
+        // 透過 SimpleJdbcCall 呼叫 Stored Procedure sp_update_like_list
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(dataSource)
+                .withProcedureName("sp_update_like_list");
+
+        // 建立參數來源，將所有 IN 參數傳入 Stored Procedure
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("p_sn", sn)                                           // 流水序號
+                .addValue("p_no", likeListRequest.getNo())                      // 產品流水號
+                .addValue("p_purchase_quantity", likeListRequest.getPurchaseQuantity()) // 購買數量
+                .addValue("p_account", likeListRequest.getAccount())            // 扣款帳號
+                .addValue("p_total_fee", totalFee)                              // 總手續費
+                .addValue("p_total_amount", totalAmount);                       // 預計扣款總金額
+
+        // 執行 Stored Procedure 更新資料
         jdbcCall.execute(params);
     }
 }

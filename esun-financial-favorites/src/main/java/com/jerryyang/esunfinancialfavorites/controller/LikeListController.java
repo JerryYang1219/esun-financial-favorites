@@ -69,4 +69,34 @@ public class LikeListController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // 更改喜好金融商品
+    @PutMapping("/users/{userId}/likelist/{sn}")
+    public ResponseEntity<LikeList> updateLikeList(
+            @PathVariable String userId,  // 從 URL 路徑取得使用者 ID
+            @PathVariable Integer sn,     // 從 URL 路徑取得流水序號
+            @RequestBody @Valid LikeListRequest likeListRequest) { // 接收並驗證前端傳來的請求參數
+
+        // 先查詢要更新的喜好清單是否存在
+        LikeList likeList = likeListService.getLikeListBySn(sn);
+
+        // 若不存在回傳 HTTP 404 Not Found
+        if (likeList == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // 檢查這筆 sn 是否屬於這個 userId
+        if (!likeList.getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // 呼叫 Service 層更新喜好清單
+        likeListService.updateLikeList(sn, likeListRequest);
+
+        // 取得更新後的喜好清單資料
+        LikeList updatedLikeList = likeListService.getLikeListBySn(sn);
+
+        // 回傳 HTTP 200 OK，並將更新後的資料放在 Response Body 中回傳給前端
+        return ResponseEntity.status(HttpStatus.OK).body(updatedLikeList);
+    }
+
 }

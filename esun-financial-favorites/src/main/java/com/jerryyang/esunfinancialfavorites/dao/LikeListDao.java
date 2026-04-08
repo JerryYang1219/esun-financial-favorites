@@ -24,4 +24,8 @@ public interface LikeListDao {
 
     //刪除喜好清單
     void deleteLikeListBySn(Integer sn);
+
+    //更改喜好清單
+    void updateLikeList(Integer sn, LikeListRequest likeListRequest,
+                        BigDecimal totalFee, BigDecimal totalAmount);
 }

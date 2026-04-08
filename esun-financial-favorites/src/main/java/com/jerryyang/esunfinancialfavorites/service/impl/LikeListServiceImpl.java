@@ -81,4 +81,27 @@ public class LikeListServiceImpl implements LikeListService{
     public void deleteLikeListBySn(Integer sn) {
         likeListDao.deleteLikeListBySn(sn);
     }
+
+    //更新喜好清單
+    @Transactional
+    @Override
+    public void updateLikeList(Integer sn, LikeListRequest likeListRequest) {
+        // 檢查產品是否存在
+        Product product = likeListDao.getProductByNo(likeListRequest.getNo());
+
+        if (product == null) {
+            log.warn("產品 {} 不存在", likeListRequest.getNo());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        // 重新計算總金額：price * purchaseQuantity
+        BigDecimal totalAmount = product.getPrice()
+                .multiply(new BigDecimal(likeListRequest.getPurchaseQuantity()));
+
+        // 重新計算總手續費：totalAmount * feeRate
+        BigDecimal totalFee = totalAmount.multiply(product.getFeeRate());
+
+        // 呼叫 DAO 更新喜好清單
+        likeListDao.updateLikeList(sn, likeListRequest, totalFee, totalAmount);
+    }
 }
