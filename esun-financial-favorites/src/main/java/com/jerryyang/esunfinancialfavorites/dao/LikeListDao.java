@@ -28,4 +28,7 @@ public interface LikeListDao {
     //更改喜好清單
     void updateLikeList(Integer sn, LikeListRequest likeListRequest,
                         BigDecimal totalFee, BigDecimal totalAmount);
+
+    // 顯示所有商品
+    List<Product> getProductList();
 }

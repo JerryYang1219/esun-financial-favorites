@@ -3,6 +3,7 @@ package com.jerryyang.esunfinancialfavorites.service;
 import com.jerryyang.esunfinancialfavorites.dto.LikeListRequest;
 import com.jerryyang.esunfinancialfavorites.dto.LikeListResponse;
 import com.jerryyang.esunfinancialfavorites.model.LikeList;
+import com.jerryyang.esunfinancialfavorites.model.Product;
 
 import java.util.List;
 
@@ -21,4 +22,8 @@ public interface LikeListService {
     void deleteLikeListBySn(Integer sn);
 
     // 更改喜好金融商品
-    void updateLikeList(Integer sn, LikeListRequest likeListRequest);}
+    void updateLikeList(Integer sn, LikeListRequest likeListRequest);
+
+    // 顯示所有商品
+    List<Product> getProductList();
+}

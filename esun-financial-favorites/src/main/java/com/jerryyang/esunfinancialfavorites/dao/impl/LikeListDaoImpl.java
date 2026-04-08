@@ -150,4 +150,17 @@ public class LikeListDaoImpl implements LikeListDao {
         // 執行 Stored Procedure 更新資料
         jdbcCall.execute(params);
     }
+
+    @Override
+    public List<Product> getProductList() {
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(dataSource)
+                .withProcedureName("sp_get_product_list")
+                .returningResultSet("productList", new ProductRowMapper());
+
+        // 執行 Stored Procedure，不需要傳入任何參數
+        Map<String, Object> result = jdbcCall.execute();
+
+        // 從 Map 中用 key "productList" 取出所有商品清單
+        return (List<Product>) result.get("productList");
+    }
 }

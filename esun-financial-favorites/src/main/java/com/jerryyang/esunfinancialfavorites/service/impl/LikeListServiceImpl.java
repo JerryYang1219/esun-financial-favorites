@@ -104,4 +104,10 @@ public class LikeListServiceImpl implements LikeListService{
         // 呼叫 DAO 更新喜好清單
         likeListDao.updateLikeList(sn, likeListRequest, totalFee, totalAmount);
     }
+
+    //呼叫 DAO 顯示所有商品
+    @Override
+    public List<Product> getProductList() {
+        return likeListDao.getProductList();
+    }
 }

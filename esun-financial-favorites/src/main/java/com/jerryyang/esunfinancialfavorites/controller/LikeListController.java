@@ -3,6 +3,7 @@ package com.jerryyang.esunfinancialfavorites.controller;
 import com.jerryyang.esunfinancialfavorites.dto.LikeListRequest;
 import com.jerryyang.esunfinancialfavorites.dto.LikeListResponse;
 import com.jerryyang.esunfinancialfavorites.model.LikeList;
+import com.jerryyang.esunfinancialfavorites.model.Product;
 import com.jerryyang.esunfinancialfavorites.service.LikeListService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,15 @@ public class LikeListController {
 
         // 回傳 HTTP 200 OK，並將更新後的資料放在 Response Body 中回傳給前端
         return ResponseEntity.status(HttpStatus.OK).body(updatedLikeList);
+    }
+
+    //顯示目前所有商品
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getProductList() {
+
+        List<Product> productList = likeListService.getProductList();
+
+        return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
 
 }
