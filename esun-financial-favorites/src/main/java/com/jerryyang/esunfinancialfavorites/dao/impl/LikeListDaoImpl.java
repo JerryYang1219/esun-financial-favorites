@@ -29,18 +29,23 @@ public class LikeListDaoImpl implements LikeListDao {
 
     @Override
     public Product getProductByNo(Integer no) {
-        // 使用具名參數查詢產品，防止 SQL Injection
-        String sql = "SELECT no, product_name, price, fee_rate FROM product WHERE no = :no";
+        // 透過 SimpleJdbcCall 呼叫 Stored Procedure sp_get_product_by_no
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(dataSource)
+                .withProcedureName("sp_get_product_by_no")
+                .returningResultSet("product", new ProductRowMapper());
 
-        // 建立參數 Map，將 no 映射至 SQL 具名參數
-        Map<String, Object> map = new HashMap<>();
-        map.put("no", no);
+        // 建立參數來源，將 Java 的 no 值對應到 SP 的 IN 參數 p_no
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("p_no", no); // 傳入產品流水號
 
-        // 執行查詢，透過 ProductRowMapper 將結果轉換成 Product 物件
-        List<Product> productList = namedParameterJdbcTemplate.query(sql, map, new ProductRowMapper());
+        // 執行 Stored Procedure，回傳結果放在 Map 中
+        Map<String, Object> result = jdbcCall.execute(params);
+
+        // 從 Map 中用 key "product" 取出查詢結果清單
+        List<Product> productList = (List<Product>) result.get("product");
 
         // 若查詢到資料則回傳第一筆，否則回傳 null
-        if (productList.size() > 0) {
+        if (productList != null && productList.size() > 0) {
             return productList.get(0);
         } else {
             return null;
@@ -71,24 +76,20 @@ public class LikeListDaoImpl implements LikeListDao {
 
     @Override
     public LikeList getLikeListBySn(Integer sn) {
-        // 使用 LEFT JOIN 串聯 like_list、product、user 三張資料表
-        // 一次查詢取得完整資料（產品名稱、使用者電子郵件）
-        String sql = "SELECT ll.sn, ll.user_id, ll.no, ll.purchase_quantity, " +
-                "ll.account, ll.total_fee, ll.total_amount, p.product_name, u.email " +
-                "FROM like_list ll " +
-                "LEFT JOIN product p ON ll.no = p.no " +
-                "LEFT JOIN user u ON ll.user_id = u.user_id " +
-                "WHERE ll.sn = :sn";
+        // 透過 SimpleJdbcCall 呼叫 Stored Procedure sp_get_like_list_by_sn
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(dataSource)
+                .withProcedureName("sp_get_like_list_by_sn")
+                .returningResultSet("likeList", new LikeListRowMapper());
 
-        // 建立參數 Map，將 sn 映射至 SQL 具名參數
-        Map<String, Object> map = new HashMap<>();
-        map.put("sn", sn);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("p_sn", sn); // 傳入流水序號
 
-        // 執行查詢，透過 LikeListRowMapper 將結果轉換成 LikeList 物件
-        List<LikeList> likeListResult = namedParameterJdbcTemplate.query(sql, map, new LikeListRowMapper());
+        Map<String, Object> result = jdbcCall.execute(params);
+
+        List<LikeList> likeListResult = (List<LikeList>) result.get("likeList");
 
         // 若查詢到資料則回傳第一筆，否則回傳 null
-        if (likeListResult.size() > 0) {
+        if (likeListResult != null && likeListResult.size() > 0) {
             return likeListResult.get(0);
         } else {
             return null;
