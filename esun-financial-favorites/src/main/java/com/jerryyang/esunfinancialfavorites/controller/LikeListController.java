@@ -1,6 +1,7 @@
 package com.jerryyang.esunfinancialfavorites.controller;
 
 import com.jerryyang.esunfinancialfavorites.dto.LikeListRequest;
+import com.jerryyang.esunfinancialfavorites.dto.LikeListResponse;
 import com.jerryyang.esunfinancialfavorites.model.LikeList;
 import com.jerryyang.esunfinancialfavorites.service.LikeListService;
 import jakarta.validation.Valid;
@@ -32,4 +33,14 @@ public class LikeListController {
         // 回傳 HTTP 201 Created，並將喜好清單資料放在 Response Body 中回傳給前端
         return ResponseEntity.status(HttpStatus.CREATED).body(likeList);
     }
+
+    //查詢喜好金融商品清單
+    @GetMapping("/users/{userId}/likelist")
+    public ResponseEntity<List<LikeListResponse>> getLikeList(@PathVariable String userId) {
+
+        List<LikeListResponse> likeListResponseList = likeListService.getLikeListByUserId(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(likeListResponseList);
+    }
+
 }

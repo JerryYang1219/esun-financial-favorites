@@ -95,4 +95,23 @@ public class LikeListDaoImpl implements LikeListDao {
             return null;
         }
     }
+
+    //查詢使用者喜好清單
+    @Override
+    public List<LikeList> getLikeListByUserId(String userId) {
+        // 透過 SimpleJdbcCall 呼叫 Stored Procedure sp_get_like_list
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(dataSource)
+                .withProcedureName("sp_get_like_list")
+                .returningResultSet("likeList", new LikeListRowMapper());
+
+        // 建立參數來源，將 userId 傳入 SP 的 IN 參數 p_user_id
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("p_user_id", userId);
+
+        // 執行 Stored Procedure，取得結果
+        Map<String, Object> result = jdbcCall.execute(params);
+
+        // 從 Map 中取出喜好清單
+        return (List<LikeList>) result.get("likeList");
+    }
 }

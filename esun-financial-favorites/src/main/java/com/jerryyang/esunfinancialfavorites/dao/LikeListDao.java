@@ -18,4 +18,7 @@ public interface LikeListDao {
 
     // 根據 sn 查詢單筆喜好清單
     LikeList getLikeListBySn(Integer sn);
+
+    //
+    List<LikeList> getLikeListByUserId(String userId);
 }

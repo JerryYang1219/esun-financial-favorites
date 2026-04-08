@@ -17,6 +17,7 @@ public class LikeList {
 
     // 擴充欄位，從 JOIN 查詢帶出
     private String productName; // 產品名稱
+    private String email;
 
     public Integer getSn() {
         return sn;
@@ -80,5 +81,13 @@ public class LikeList {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

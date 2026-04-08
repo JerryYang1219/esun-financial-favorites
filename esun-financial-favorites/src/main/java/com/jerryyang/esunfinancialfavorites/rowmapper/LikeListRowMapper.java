@@ -19,6 +19,7 @@ public class LikeListRowMapper implements RowMapper<LikeList> {
         likeList.setTotalFee(rs.getBigDecimal("total_fee"));
         likeList.setTotalAmount(rs.getBigDecimal("total_amount"));
         likeList.setProductName(rs.getString("product_name"));
+        likeList.setEmail(rs.getString("email"));
 
         return likeList;
     }
