@@ -43,4 +43,30 @@ public class LikeListController {
         return ResponseEntity.status(HttpStatus.OK).body(likeListResponseList);
     }
 
+    //刪除喜好金融商品
+    @DeleteMapping("/users/{userId}/likelist/{sn}")
+    public ResponseEntity<?> deleteLikeList(
+            @PathVariable String userId, // 從 URL 路徑取得使用者 ID
+            @PathVariable Integer sn) { // 從 URL 路徑取得流水序號
+
+        // 先查詢要刪除的喜好清單是否存在
+        LikeList likeList = likeListService.getLikeListBySn(sn);
+
+        // 若不存在回傳 HTTP 404 Not Found
+        if (likeList == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // 檢查這筆 sn 是否屬於這個 userId，防止使用者刪除別人的資料
+        if (!likeList.getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // 呼叫 Service 層刪除指定的喜好清單
+        likeListService.deleteLikeListBySn(sn);
+
+        // 回傳 HTTP 204 No Content 表示刪除成功
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
 }

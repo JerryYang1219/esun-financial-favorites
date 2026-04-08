@@ -75,4 +75,10 @@ public class LikeListServiceImpl implements LikeListService{
 
         return likeListResponseList;
     }
+
+    //實作刪除
+    @Override
+    public void deleteLikeListBySn(Integer sn) {
+        likeListDao.deleteLikeListBySn(sn);
+    }
 }

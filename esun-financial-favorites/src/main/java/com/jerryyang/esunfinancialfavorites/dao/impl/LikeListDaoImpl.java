@@ -114,4 +114,18 @@ public class LikeListDaoImpl implements LikeListDao {
         // 從 Map 中取出喜好清單
         return (List<LikeList>) result.get("likeList");
     }
+
+    @Override
+    public void deleteLikeListBySn(Integer sn) {
+        // 透過 SimpleJdbcCall 呼叫 Stored Procedure sp_delete_like_list
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(dataSource)
+                .withProcedureName("sp_delete_like_list");
+
+        // 建立參數來源，將 sn 傳入 SP 的 IN 參數 p_sn
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("p_sn", sn); // 傳入流水序號
+
+        // 執行 Stored Procedure 刪除資料
+        jdbcCall.execute(params);
+    }
 }

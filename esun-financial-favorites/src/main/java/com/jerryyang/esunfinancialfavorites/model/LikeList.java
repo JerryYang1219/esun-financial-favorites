@@ -17,6 +17,7 @@ public class LikeList {
 
     // 擴充欄位，從 JOIN 查詢帶出
     private String productName; // 產品名稱
+    @JsonIgnore
     private String email;
 
     public Integer getSn() {
