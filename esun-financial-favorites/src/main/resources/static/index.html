@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金融商品喜好紀錄系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #00A88F; padding-bottom: 10px; }
+        h2 { color: #00A88F; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+        button { padding: 8px 16px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-primary { background-color: #00A88F; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-warning { background-color: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #00A88F; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .section { background: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #ddd; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>🏦 金融商品喜好紀錄系統</h1>
+
+    <!-- 使用者設定 -->
+    <div class="section">
+        <h2>使用者設定</h2>
+        <label>使用者 ID：</label>
+        <input v-model="userId" placeholder="輸入使用者 ID，例如 A1236456789" style="width: 300px;" />
+    </div>
+
+    <!-- 商品列表 -->
+    <div class="section">
+        <h2>目前可選商品</h2>
+        <table v-if="productList.length > 0">
+            <tr>
+                <th>產品編號</th>
+                <th>產品名稱</th>
+                <th>產品價格</th>
+                <th>手續費率</th>
+            </tr>
+            <tr v-for="product in productList" :key="product.no">
+                <td>{{ product.no }}</td>
+                <td>{{ product.productName }}</td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.feeRate }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 新增喜好金融商品 -->
+    <div class="section">
+        <h2>新增喜好金融商品</h2>
+        <input v-model="createForm.no" placeholder="產品編號 (no)" type="number" />
+        <input v-model="createForm.purchaseQuantity" placeholder="購買數量" type="number" />
+        <input v-model="createForm.account" placeholder="扣款帳號" />
+        <button class="btn-primary" @click="createLikeList">新增</button>
+        <div v-if="createMessage" :class="['message', createSuccess ? 'success' : 'error']">
+            {{ createMessage }}
+        </div>
+    </div>
+
+    <!-- 查詢喜好金融商品清單 -->
+    <div class="section">
+        <h2>查詢喜好金融商品清單</h2>
+        <button class="btn-primary" @click="getLikeList">查詢</button>
+        <table v-if="likeList.length > 0">
+            <tr>
+                <th>序號</th>
+                <th>產品名稱</th>
+                <th>扣款帳號</th>
+                <th>總手續費</th>
+                <th>預計扣款總金額</th>
+                <th>電子信箱</th>
+                <th>操作</th>
+            </tr>
+            <tr v-for="item in likeList" :key="item.sn">
+                <td>{{ item.sn }}</td>
+                <td>{{ item.productName }}</td>
+                <td>{{ item.account }}</td>
+                <td>{{ item.totalFee }}</td>
+                <td>{{ item.totalAmount }}</td>
+                <td>{{ item.email }}</td>
+                <td>
+                    <button class="btn-danger" @click="deleteLikeList(item.sn)">刪除</button>
+                    <button class="btn-warning" @click="openUpdate(item)">更新</button>
+                </td>
+            </tr>
+        </table>
+        <p v-else-if="searched">目前沒有喜好清單</p>
+    </div>
+
+    <!-- 更新喜好金融商品 -->
+    <div class="section" v-if="updateForm.sn">
+        <h2>更新喜好金融商品 (序號：{{ updateForm.sn }})</h2>
+        <input v-model="updateForm.no" placeholder="產品編號 (no)" type="number" />
+        <input v-model="updateForm.purchaseQuantity" placeholder="購買數量" type="number" />
+        <input v-model="updateForm.account" placeholder="扣款帳號" />
+        <button class="btn-warning" @click="updateLikeList">確認更新</button>
+        <button @click="updateForm.sn = null" style="background-color: #95a5a6;">取消</button>
+        <div v-if="updateMessage" :class="['message', updateSuccess ? 'success' : 'error']">
+            {{ updateMessage }}
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+    createApp({
+        data() {
+            return {
+                userId: '',
+                likeList: [],
+                searched: false,
+                createForm: { no: '', purchaseQuantity: '', account: '' },
+                updateForm: { sn: null, no: '', purchaseQuantity: '', account: '' },
+                createMessage: '',
+                createSuccess: false,
+                updateMessage: '',
+                updateSuccess: false,
+                productList: [],
+            }
+        },
+        methods: {
+            async createLikeList() {
+                if (!this.userId) { this.createMessage = '請先輸入使用者 ID'; this.createSuccess = false; return; }
+                try {
+                    const res = await fetch(`/users/${this.userId}/likelist`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            no: parseInt(this.createForm.no),
+                            purchaseQuantity: parseInt(this.createForm.purchaseQuantity),
+                            account: this.createForm.account
+                        })
+                    });
+                    if (res.ok) {
+                        this.createMessage = '新增成功！';
+                        this.createSuccess = true;
+                        this.createForm = { no: '', purchaseQuantity: '', account: '' };
+                        this.getLikeList();
+                    } else {
+                        this.createMessage = '新增失敗，請確認輸入資料';
+                        this.createSuccess = false;
+                    }
+                } catch (e) {
+                    this.createMessage = '連線失敗';
+                    this.createSuccess = false;
+                }
+            },
+            async getLikeList() {
+                if (!this.userId) { alert('請先輸入使用者 ID'); return; }
+                try {
+                    const res = await fetch(`/users/${this.userId}/likelist`);
+                    this.likeList = await res.json();
+                    this.searched = true;
+                } catch (e) {
+                    alert('查詢失敗');
+                }
+            },
+            async deleteLikeList(sn) {
+                if (!confirm('確定要刪除嗎？')) return;
+                try {
+                    const res = await fetch(`/users/${this.userId}/likelist/${sn}`, { method: 'DELETE' });
+                    if (res.status === 204) {
+                        alert('刪除成功！');
+                        this.getLikeList();
+                    } else if (res.status === 403) {
+                        alert('無權限刪除此資料！');
+                    } else {
+                        alert('刪除失敗');
+                    }
+                } catch (e) {
+                    alert('連線失敗');
+                }
+            },
+            openUpdate(item) {
+                this.updateForm = { sn: item.sn, no: '', purchaseQuantity: '', account: item.account };
+                this.updateMessage = '';
+            },
+            async updateLikeList() {
+                try {
+                    const res = await fetch(`/users/${this.userId}/likelist/${this.updateForm.sn}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            no: parseInt(this.updateForm.no),
+                            purchaseQuantity: parseInt(this.updateForm.purchaseQuantity),
+                            account: this.updateForm.account
+                        })
+                    });
+                    if (res.ok) {
+                        this.updateMessage = '更新成功！';
+                        this.updateSuccess = true;
+                        this.updateForm.sn = null;
+                        this.getLikeList();
+                    } else {
+                        this.updateMessage = '更新失敗';
+                        this.updateSuccess = false;
+                    }
+                } catch (e) {
+                    this.updateMessage = '連線失敗';
+                    this.updateSuccess = false;
+                }
+            },
+            async getProductList() {
+                try {
+                    const res = await fetch('/products');
+                    this.productList = await res.json();
+                } catch (e) {
+                    alert('查詢商品失敗');
+                }
+            },
+        },
+        mounted() {
+            this.getProductList();
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
