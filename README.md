@@ -24,16 +24,18 @@
 - 防止 **SQL Injection** 及 **XSS** 攻擊
 
 ## 專案結構
+```text
 src/main/java/com/jerryyang/esunfinancialfavorites/
-├── controller/        # 展示層
-├── service/           # 業務層
+├── controller/        # 展示層 
+├── service/           # 業務層 
 │   └── impl/
-├── dao/               # 資料層
+├── dao/               # 資料層 
 │   └── impl/
-├── model/             # 資料模型
-├── dto/               # 資料傳輸物件
-├── rowmapper/         # 資料庫結果映射
-└── XssFilter.java     # XSS 防護
+├── model/             # 資料物件 
+├── dto/               # 資料傳輸物件 
+├── rowmapper/         # 資料映射 
+└── XssFilter.java     # XSS 安全防護
+```
 
 ## 資料庫
 
